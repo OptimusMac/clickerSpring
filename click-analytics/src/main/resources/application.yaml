@@ -1,0 +1,24 @@
+spring:
+  kafka:
+    profiles: docker
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: analytics-group
+      auto-offset-reset: earliest
+  data:
+    cassandra:
+      contact-points:
+        - cassandra
+      keyspace-name: clicker
+      local-datacenter: datacenter1
+      connection:
+        connect-timeout: 30s
+        init-query-timeout: 30s
+      request:
+        timeout: 20s
+        consistency: local_one
+      pool:
+        idle-timeout: 10s
+        heartbeat-interval: 30s
+server:
+  port: 8081
