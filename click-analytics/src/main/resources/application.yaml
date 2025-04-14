@@ -1,10 +1,14 @@
 spring:
   kafka:
-    profiles: docker
     bootstrap-servers: kafka:9092
     consumer:
-      group-id: analytics-group
-      auto-offset-reset: earliest
+      group-id: analytics-group # Уникальный для этого сервиса
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
   data:
     cassandra:
       contact-points:
@@ -20,5 +24,19 @@ spring:
       pool:
         idle-timeout: 10s
         heartbeat-interval: 30s
-server:
-  port: 8081
+  cassandra:
+    keyspace-name: clicker
+    schema-action: CREATE_IF_NOT_EXISTS
+
+auto:
+  create:
+    topics:
+      enable: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus
+  endpoint:
+    prometheus:
+      enabled: true

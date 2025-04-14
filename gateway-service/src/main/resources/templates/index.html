@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>COSMIC HYPER CLICKER</title>
+  <script th:src="@{/js/main.js}"></script>
+  <style>
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      overflow: hidden;
+      font-family: 'Rajdhani', sans-serif;
+      background: #000;
+      color: white;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .auth-modal {
+      background: linear-gradient(135deg, rgba(10, 10, 30, 0.9), rgba(20, 20, 50, 0.9));
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 500px;
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+      text-align: center;
+      transform: translateY(50px);
+      opacity: 0;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .auth-modal {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .auth-modal h2 {
+      color: white;
+      font-size: 2rem;
+      margin-bottom: 30px;
+      background: linear-gradient(to right, #00ffff, #0088ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .oauth-providers {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .oauth-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 15px 20px;
+      border-radius: 50px;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      font-size: 1.1rem;
+    }
+
+    .oauth-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .oauth-btn i {
+      margin-right: 10px;
+      font-size: 1.5rem;
+    }
+
+    .btn-github {
+      background: #333;
+    }
+
+    .btn-discord {
+      background: #5865F2;
+    }
+
+    .btn-google {
+      background: #4285F4;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: #00ffff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .close-modal:hover {
+      transform: rotate(90deg);
+      color: #ff00cc;
+    }
+
+    /* Новый стиль для хедера */
+     .cosmic-header {
+    position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000; /* Увеличим z-index */
+      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+      /* Убираем начальное скрытие - будет анимировано через GSAP */
+    }
+
+    .header-user {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #00ffff;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .user-avatar:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+    }
+
+    .username {
+      font-weight: 600;
+      font-size: 1.2rem;
+      background: linear-gradient(to right, #00ffff, #0088ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 10px rgba(0, 200, 255, 0.3);
+    }
+
+    .login-btn {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 136, 255, 0.2));
+      border: 2px solid rgba(0, 255, 255, 0.3);
+      border-radius: 50px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .login-btn:hover {
+      background: linear-gradient(135deg, rgba(0, 255, 255, 0.3), rgba(0, 136, 255, 0.3));
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    }
+
+#webgl-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.ui-container {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  pointer-events: none;
+  padding: 20px;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  margin-bottom: 1.5rem;
+  background: linear-gradient(to right, #ff00cc, #3333ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 20px rgba(255, 0, 204, 0.5);
+  letter-spacing: 3px;
+  font-weight: 700;
+  transform: translateY(-50px);
+  opacity: 0;
+  line-height: 1.2;
+}
+
+.counter {
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: bold;
+  margin: 1.5rem 0;
+  color: white;
+  text-shadow: 0 0 20px #00ffff, 0 0 40px #0088ff;
+  transform: scale(0.5);
+  opacity: 0;
+}
+
+.click-btn {
+  position: relative;
+  padding: 1.2rem 2.5rem;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-weight: bold;
+  color: white;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5),
+			  inset 0 0 20px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  pointer-events: all;
+  transform: translateY(50px);
+  opacity: 0;
+  min-width: 200px;
+}
+
+.click-btn:hover {
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.8),
+			  inset 0 0 30px rgba(255, 255, 255, 0.3);
+  transform: translateY(50px) scale(1.05);
+}
+
+.click-btn:active {
+  transform: translateY(50px) scale(0.95);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3),
+			  inset 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.click-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+	45deg,
+	transparent,
+	rgba(255, 0, 204, 0.2),
+	rgba(51, 51, 255, 0.2),
+	transparent
+  );
+  transform: rotate(45deg);
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
+
+.click-btn:hover::before {
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { left: -50%; }
+  100% { left: 150%; }
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  transform: translateY(30px);
+  opacity: 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+  min-width: 120px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #00ffff;
+  text-shadow: 0 0 10px #00ffff;
+}
+
+.nebula {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.5;
+  z-index: -1;
+}
+
+.nebula-1 {
+  background: radial-gradient(circle, #ff00cc 0%, transparent 70%);
+  top: 20%;
+  left: 10%;
+}
+
+.nebula-2 {
+  background: radial-gradient(circle, #3333ff 0%, transparent 70%);
+  bottom: 10%;
+  right: 10%;
+}
+
+/* Оптимизации для мобильных устройств */
+@media (max-width: 768px) {
+  .nebula {
+	width: 150px;
+	height: 150px;
+	filter: blur(40px);
+  }
+
+  .click-btn {
+	padding: 1rem 2rem;
+	min-width: 160px;
+  }
+
+  .stats {
+	gap: 0.8rem;
+  }
+
+  .stat {
+	padding: 0.6rem 1rem;
+	min-width: 100px;
+  }
+}
+
+/* Оптимизации для очень маленьких экранов */
+@media (max-width: 480px) {
+  h1 {
+	font-size: 2rem;
+	margin-bottom: 1rem;
+  }
+
+  .counter {
+	font-size: 2.5rem;
+	margin: 1rem 0;
+  }
+
+  .click-btn {
+	padding: 0.8rem 1.5rem;
+	font-size: 1.1rem;
+	min-width: 140px;
+  }
+
+  .stat {
+	padding: 0.5rem 0.8rem;
+	min-width: 80px;
+  }
+
+  .stat-value {
+	font-size: 1rem;
+  }
+}
+  </style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.11.4/dist/gsap.min.js"></script>
+<header class="cosmic-header">
+  <div class="logo">COSMIC HYPER CLICKER</div>
+
+  <button class="login-btn" id="loginBtn">WARP LOGIN</button>
+</header>
+
+<div class="modal-overlay" id="authModal">
+  <button class="close-modal" id="closeModal">&times;</button>
+  <div class="auth-modal">
+    <h2>WARP GATE ACCESS</h2>
+    <div class="oauth-providers">
+      <button class="oauth-btn btn-github" onclick="authWith('github')">
+        <i class="fab fa-github"></i> Continue with GitHub
+      </button>
+      <button class="oauth-btn btn-discord" onclick="authWith('discord')">
+        <i class="fab fa-discord"></i> Continue with Discord
+      </button>
+      <button class="oauth-btn btn-google" onclick="authWith('google')">
+        <i class="fab fa-google"></i> Continue with Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<audio id="clickSound" preload="auto">
+  <source th:src="@{/sound/69880c1f5e57698.mp3}" type="audio/mpeg">
+</audio>
+
+<div id="webgl-container"></div>
+<div class="nebula nebula-1"></div>
+<div class="nebula nebula-2"></div>
+
+<div class="ui-container">
+  <h1>COSMIC HYPER CLICKER</h1>
+  <div class="counter" id="counter">0</div>
+  <button class="click-btn" id="clickBtn" th:action="@{/api/v2/click}">WARP SPEED ENGAGE!</button>
+
+  <div class="stats">
+    <div class="stat">
+      <div>CPS:</div>
+      <div class="stat-value" id="cps">0</div>
+    </div>
+    <div class="stat">
+      <div>TOTAL:</div>
+      <div class="stat-value" id="total">0</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+

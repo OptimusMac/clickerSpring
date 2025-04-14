@@ -21,4 +21,4 @@ spring:
         idle-timeout: 10s
         heartbeat-interval: 30s
 server:
-  port: 8081
+  port: 8083

@@ -1,7 +1,19 @@
 spring:
   kafka:
-    profiles: docker
     bootstrap-servers: kafka:9092
+    consumer:
+      group-id: analytics-group # Уникальный для этого сервиса
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus
+  endpoint:
+    prometheus:
+      enabled: true

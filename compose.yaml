@@ -24,12 +24,27 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_CREATE_TOPICS: "clicker:3:1"
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
     networks:
       - app-network
+
+  kafka-init:
+    image: docker.io/bitnami/kafka:3
+    networks:
+      - app-network
+    command: /create-topics.sh
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - TEST_TOPIC_NAME=test
+    depends_on:
+      kafka:
+        condition: service_started
+    volumes:
+      - ./create-topics.sh:/create-topics.sh
+    init: true
 
   # Cassandra
   cassandra:
@@ -50,6 +65,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 20
+    restart: always
 
   # Prometheus
   prometheus:
