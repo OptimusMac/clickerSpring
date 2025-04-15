@@ -161,6 +161,6 @@ docker-compose up (-d)
 
 # [Cosmic Clicker]
 
-Developed with ❤️ by [OptimusMac] | 2025
+Developed with ❤️ by OptimusMac | 2025
 
 ---
