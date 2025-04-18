@@ -1,7 +1,7 @@
 # ClickerSpring 🚀
 
 [![Java](https://img.shields.io/badge/Java-17%2B-blue)](https://java.com)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.5-green)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.4-green)](https://spring.io/projects/spring-boot)
 [![Docker](https://img.shields.io/badge/Docker-24.0%2B-blue)](https://docker.com)
 [![Kafka](https://img.shields.io/badge/Apache%20Kafka-3.4%2B-orange)](https://kafka.apache.org)
 
